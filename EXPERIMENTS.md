@@ -125,13 +125,24 @@ latency, not on top-1**.
 A frontier model given only `Read`/`Grep`/`Glob` on a Django checkout — no graph, no index —
 was scored on the same instances as the CodeGrove pipeline.
 
-| | Hit@1 |
-| --- | ---: |
-| Frontier model, direct repository exploration | **0.80** (contaminated) / **0.75** (fresh) |
-| CodeGrove pipeline, same instances | **0.50** |
+**The one head-to-head comparison — n=20, contaminated Django:**
 
-The fresh run rules out memorisation as the explanation (0.80 → 0.75 only), so the gap is real
-on this benchmark.
+| | Hit@1 | n |
+| --- | ---: | ---: |
+| Frontier model, direct repository exploration | **0.80** | 20 |
+| CodeGrove pipeline, same instances | **0.50** | 20 |
+
+Both arms were scored by the *same* code path: gold v2 with the dual-format alias, the identical
+instance list, and the identical rule — is the first predicted function FQN in the gold set. The
+comparison is methodologically clean.
+
+**What it is not:** at n=20 a single instance moves the number 5 pp, so the 30 pp gap is six
+instances. The direction is credible; the magnitude is not resolved by this sample.
+
+A separate run scored the frontier model at **0.75 on fresh 2026 Django PRs** (n=28), which rules
+out memorisation as the explanation for its score. **That run has no pipeline arm** — re-indexing
+the fresh corpus was a blocker — so it is a memorisation control for the frontier model, not a
+second head-to-head.
 
 **Three confounds, stated because they bound the claim rather than excuse it:** the frontier
 model was far stronger than the pipeline's judge (swapping it in gives the pipeline +6.9 pp);

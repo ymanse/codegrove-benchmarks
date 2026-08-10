@@ -248,11 +248,16 @@ required for that, and is not reversible.
 - Scores move with the judge model and its effort setting; `cm99` spans 0.232 – 0.849. A number
   without its configuration is not meaningful.
 - `cm99` is a 99-instance Django subset, not full SWE-bench.
-- On this benchmark a frontier model with plain `Read`/`Grep`/`Glob` and no index scores higher
-  (0.75 fresh / 0.80 contaminated) than the pipeline on the same instances. Django is small,
-  public and well-structured — the regime where a code graph adds least. That comparison is in
-  [`EXPERIMENTS.md`](EXPERIMENTS.md#campaign-6--the-unflattering-comparison), published rather
-  than omitted.
+- **On a 20-instance slice of this benchmark, a frontier model with plain `Read`/`Grep`/`Glob`
+  and no index scored higher than the pipeline — 0.80 against 0.50.** Same gold set, same
+  instances, same rule. At n=20 one instance is 5 pp, so that gap is six instances; treat the
+  direction as real and the magnitude as unresolved. Django is also small, public and
+  well-structured — the regime where a code graph adds least, and not the large private
+  cross-language codebases the graph exists for. Published rather than omitted:
+  [`EXPERIMENTS.md`](EXPERIMENTS.md#campaign-6--the-unflattering-comparison).
+- A separate fresh-data run scored the frontier model at 0.75, which rules out memorisation as
+  its explanation. **That run has no pipeline counterpart** — re-indexing was a blocker — so it
+  is a memorisation control, not a second comparison.
 - Treat these as a characterization of one pipeline at one point in time, not a leaderboard score.
 
 ---
