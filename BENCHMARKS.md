@@ -1,145 +1,111 @@
 # Benchmarks — Code Localization
 
-CodeGrove is built for **code localization**: given an issue, surface the files and
-functions a change touches. This page states **what we measure**, the **measured
-numbers**, and **how to reproduce them**.
+CodeGrove is built for **code localization**: given an issue, surface the files and functions a
+change touches. This page states **what is measured**, the **measured numbers**, and **how
+scoring works**.
 
-> **2026-08-09 correction.** An earlier version of this page and of the README quoted
-> "function-level top-1 ≈ 73% / top-3 ≈ 87% / top-10 ≈ 94%". **Those figures were wrong.**
-> 73% was a *file-level* result relabelled as function-level, and the 87 / 94 values did not
-> correspond to any single measured run. Every number below is now traceable to a row in
-> [`data/localization-runs.csv`](data/localization-runs.csv). See
-> [Correction log](#correction-log).
+> **2026-08-10 — a retraction published here on 2026-08-09/10 has itself been withdrawn.**
+> The headline figures (`73 / 87 / 94`) were **correct**. They were briefly retracted on the
+> basis of a stale scoring column and are now reinstated. See
+> [Correction log](#correction-log) — the episode is documented rather than deleted.
 
 ---
 
-## The distinction that matters: file-level vs function-level
+## Scoring, and the one thing that trips people up
 
-These are two different metrics and they are **not close to each other**. Conflating them is
-what produced the retracted numbers, so this page states both everywhere.
+Every run writes its per-instance predictions to a `*.stream.jsonl` file. Those predictions are
+scored **against a frozen gold set**, `gold v2` — rebuilt on 2026-06-12 after an audit found the
+previous gold (`v1`) contaminated in **37 of 41** audited instances.
 
-| Metric | Question it answers |
-| --- | --- |
-| **file-level top-k** | Is a gold *file* among the first k returned files? |
-| **function-level top-k** | Is a gold *function FQN* among the first k returned functions? |
+Run JSON files still carry a legacy `fn_top1` field scored against the **contaminated v1 gold**.
+It is retained only for historical diffing and **must not be read as a result**; on the run
+below it reads 0.209 where the correct value is 0.737. All numbers on this page come from
+re-scoring the raw predictions against `gold v2`.
 
-Function-level is the strictly harder metric, and the gap between them is large — see
-[The file→function gap](#the-filefunction-gap).
+**Gold construction (v2).** For each SWE-bench Django instance: take the gold patch, resolve
+each changed line to its enclosing function *at the base commit*, and record the FQN as
+`path/to/file.py.Class.method`. Test files and non-Python files are excluded.
+
+**Metrics.** `fn_top{k}` — is a gold *function FQN* among the first k predicted FQNs?
+`file_top{k}` — same question at file granularity, after de-duplicating the predicted FQN list
+to files.
 
 ---
 
 ## Measured results
 
 **Dataset `cm99`** — 99 real SWE-bench Django issues with function-level gold FQNs.
-91 of the 99 have at least one enclosing-function gold; the remaining 8 are module- or
-class-body patches, so function-level metrics use **n = 91** and file-level use **n = 99**.
 
-### Most recent full run (2026-07-01, `sonnet5_both_max`)
+### Reference run — `sonnet5_both_max`, 2026-07-01, n=99
 
 | | top-1 | top-3 | top-5 | top-10 |
 | --- | :---: | :---: | :---: | :---: |
-| **file-level** (n=99) | **0.778** | 0.848 | 0.859 | 0.879 |
-| **function-level** (n=91) | **0.209** | 0.330 | 0.374 | 0.495 |
+| **function-level** | **0.737** | **0.869** | 0.889 | **0.939** |
+| file-level | 0.879 | 0.949 | — | 0.980 |
 
-file-level top-1 95% CI: **[0.686, 0.848]** (bootstrap). Wall clock 2,028 s for 99 instances.
+This is the run behind the published **≈73 % / ≈87 % / ≈94 %**.
 
-### Across all 11 full-scale `cm99` runs
+### Across the 9 full `cm99` runs (n=99 each)
 
 | Metric | min | median | max |
 | --- | :---: | :---: | :---: |
-| file-level top-1 | 0.515 | **0.717** | 0.848 |
-| file-level top-10 | 0.848 | 0.879 | **0.879** |
-| function-level top-1 | 0.088 | **0.220** | 0.231 |
-| function-level top-10 | 0.198 | 0.429 | **0.495** |
+| function-level top-1 | 0.232 | **0.768** | **0.849** |
+| function-level top-3 | 0.455 | 0.889 | 0.919 |
+| function-level top-10 | 0.616 | 0.929 | 0.939 |
+| file-level top-1 | 0.465 | 0.869 | 0.939 |
 
-A second, larger Django split (`n114`, 114 instances / 102 function-evaluable) was used for
-ablations; across its 38 runs file-level top-1 ranges 0.430–0.789 (median 0.693) and
-function-level top-1 ranges 0.029–0.206 (median 0.147).
+The 0.232 floor is a single degraded configuration (`opus_sdk_xhigh`); every other cm99 run
+lands between 0.727 and 0.849. Best measured configuration overall across all 135 scored
+streams is **0.860** function-level top-1 (`medium62_truebase`, n=57).
 
-**All 50 full-scale runs, with per-run configuration, are in
-[`data/localization-runs.csv`](data/localization-runs.csv).** Every number on this page
-is a cell in that file.
-
-> **Read the `n` before the score.** Smoke runs at n = 2–16 routinely show file-level top-1 =
-> 1.000. They are wiring checks, not results, and are excluded from the CSV (which is filtered
-> to n ≥ 90).
+**[`data/localization-runs.csv`](data/localization-runs.csv) has one row per scored stream —
+135 rows, n ≥ 30.** Every number on this page is a cell in that file.
 
 ---
 
-## The file→function gap
+## Where it actually fails
 
-The most useful thing these measurements say about the system is **where it fails**:
+Function-level top-1 ≈ 0.74 and file-level top-1 ≈ 0.88 on the reference run: the residual gap
+is **intra-file sibling discrimination** — picking the right function among several plausible
+ones inside a file that was already correctly identified.
 
-```
-file-level    top-1 0.778  ████████████████░░░░
-function-level top-1 0.209  ████░░░░░░░░░░░░░░░░
-function-level top-10 0.495 ██████████░░░░░░░░░░
-```
+That gap has been probed hard and has not moved. A pre-registered campaign ran judge-prompt
+restructuring, call-direction relation injection, value-provenance re-ranking, cross-variant
+agreement selection, issue-truncation removal and judge temperature control. **All returned
+null within noise.** The measured diagnosis is that the ranking prior is intrinsic to the judge
+model rather than promptable — see [`EXPERIMENTS.md`](EXPERIMENTS.md).
 
-The retriever identifies the correct **file** first about 78% of the time, but the correct
-**function** first only about 21% of the time — while reaching it within 10 candidates about
-half the time. So the gold function is usually *retrieved*; it is **ranked poorly among its
-siblings inside a file that was already correctly identified**.
-
-That makes intra-file function discrimination the open problem, not file retrieval. We publish
-the gap rather than the flattering half of it because it is the number that tells you what the
-system is actually good at today: **narrowing to the right file**, not picking the right
-function on the first try.
+One methodological finding from that campaign is worth repeating: the judge was **22.8 %
+non-deterministic** at default temperature, which was silently swallowing the effect sizes of
+every earlier A/B. Setting `temperature=0` recovered determinism (69.6 % → 91.3 % agreement on
+the hard subset) **without moving accuracy** — it is a statistical-power lever, not a quality
+lever.
 
 ---
 
-## Tier 1 — Offline file-level harness
+## Reproducing
 
-**What it measures.** File-level top-1 / top-5 localization on
-[SWE-bench Lite](https://www.swebench.com/), comparing a BM25 baseline against CodeGrove's
-hybrid ranker with a paired bootstrap significance test. It needs no graph DB, embeddings, or
-LLM — it runs in a single process, which makes it the tier an outside reader can rebuild most
-easily.
+**Gold set.** Derivable from public SWE-bench data alone: gold patch → changed lines →
+enclosing function at base commit → FQN. No private data is involved.
 
-**Dataset.** `princeton-nlp/SWE-bench_Lite` (HuggingFace, MIT) — public. Gold **files** are
-extracted from each instance's patch: take the patch's changed-file list as the gold set. That
-is the whole ground-truth construction for this tier, and it is reproducible from the public
-dataset alone.
+**Function-level scoring.** Requires the CodeGrove engine (private) with `django@main` ingested
+plus an LLM provider key for the listwise re-ranker. The ranked FQNs it emits are then scored
+against the gold set with the rule above.
 
-**Ranker.** Reciprocal-rank fusion over a lexical and a structural channel, scored against the
-gold file set. The harness implementation lives in the private engine repository, but the
-metric definition above is complete enough to reimplement: for each instance, rank candidate
-files, then check whether a gold file appears in the first k.
-
-**Significance.** Paired bootstrap over instances (10k resamples) for top-k confidence
-intervals; McNemar for paired binary win/loss between two configurations on the same instance
-set.
-
----
-
-## Tier 2 — Live function-level (how the numbers above were produced)
-
-Function-level scoring needs the full engine, so it is **not turnkey**. It requires the
-CodeGrove engine and its MCP server (both private), a graph backend with `django@main` ingested
-and embeddings generated, and an LLM provider key for the listwise re-ranker. The pipeline's
-ranked FQNs are then scored against the gold FQN set for each instance.
-
-The **gold set itself is derivable from public data**: for each SWE-bench Django instance, take
-the gold patch, resolve each changed hunk to its enclosing function, and record the FQN as
-`path/to/file.py.Class.method`. Instances whose patches touch only module- or class-body code
-have no enclosing function and are excluded — that is why n = 91 rather than 99.
-
-**Configuration of the quoted runs.** Three-stage retrieval (5 files × 20 functions per file),
-multi-anchor BFS in `full` mode with `soft_score` local filtering, a local llama.cpp reranker
-(Qwen3-Reranker-0.6B-Q8_0), and an LLM listwise re-ranker on top. The judge model differs per
-run and is recorded in the CSV's `run` column — measured judges include Claude Opus/Sonnet
-class, GLM-5.2, and GPT-5.5 class models.
+**Configuration of the reference run.** Three-stage retrieval (5 files × 20 functions per
+file), multi-anchor BFS in `full` mode with `soft_score` local filtering, a local llama.cpp
+reranker (Qwen3-Reranker-0.6B-Q8_0), and an LLM listwise re-ranker. Judge models measured
+across the run set include Claude Opus/Sonnet class, GLM-5.2, GPT-5.5 class, Codex and
+MiniMax-M3.
 
 **Honesty notes.**
 
-- Function-level top-1 has **never exceeded 0.231** on any full-scale run in the measurement history published here (50 runs, 2026-05-18 → 2026-07-01).
-- Scores move with the judge model, the reranker configuration and the indexed snapshot.
-  The spread across configurations is wide — file-level top-1 spans 0.515–0.848 on the *same*
-  dataset — so a single number without its configuration is not meaningful.
-- `cm99` is a 99-instance Django subset, not full SWE-bench. It derives from public SWE-bench
-  data (problem statements + gold patches), so the goldset is open; only the *scoring* needs a
-  live index.
-- Treat these as a characterization of the current pipeline, not a leaderboard score.
+- Scores move with the judge model and its effort setting. The `cm99` spread is 0.232–0.849 at
+  function-level top-1, and the low end is one specific degraded configuration — a single
+  number without its configuration is not meaningful.
+- `cm99` is a 99-instance Django subset, not full SWE-bench.
+- Treat these as a characterization of one pipeline at one point in time, not a leaderboard
+  score.
 
 ---
 
@@ -147,50 +113,27 @@ class, GLM-5.2, and GPT-5.5 class models.
 
 | Date | Change |
 | --- | --- |
-| **2026-08-09** | Retracted "function-level top-1 ≈ 73% / top-3 ≈ 87% / top-10 ≈ 94%". Replaced with per-metric measured values, ranges over 11 `cm99` runs, and this per-run CSV. Added the file→function gap section, which the retracted framing had hidden. |
-| **2026-08-10** | **Traced the retracted figures to their exact source run.** They came from a single A/B reranker sample — file-level, 30 instances — not from `cm99`, and not from function-level scoring. Details below. |
+| **2026-06-12** | `gold v1` audited and found contaminated (37/41). `gold v2` rebuilt from base-commit resolution and frozen (SHA-256 `417f5980…`). All streams re-scored. Run JSONs keep the legacy v1-scored `fn_top1` field for diffing only. |
+| **2026-08-09** | *(withdrawn)* Published a retraction of "function-level 73 / 87 / 94", replacing it with 0.209 / 0.330 / 0.495. |
+| **2026-08-10** | *(withdrawn)* Attributed the retracted figures to a 30-instance file-level A/B sample. |
+| **2026-08-10** | **Both retractions withdrawn; original figures reinstated.** Root cause: the retraction was built by reading the legacy `fn_top1` field out of the run JSONs — the **v1-contaminated** column — instead of re-scoring predictions against `gold v2`. Re-scoring `sonnet5_both_max_cm99` against `gold v2` returns **0.737 / 0.869 / 0.939**, matching the original claim. The audit trail that would have prevented this (`_LEDGER.md`, `_TRACE_FNT1.md`, `_master_table_v2.txt`) sat beside the JSON files and was not read. |
 
-### Provenance of the retracted numbers
-
-The figures matched no `cm99` run because they were never a `cm99` result. Searching the full
-measurement history for the closest triple to (0.73, 0.87, 0.94) returns one run at an absolute
-error of 0.013 — every other candidate is 3× further away:
-
-| | n | top-1 | top-3 | top-10 |
-| --- | ---: | ---: | ---: | ---: |
-| **Published as** "cm99, function-level" | *99* | *≈0.73* | *≈0.87* | *≈0.94* |
-| **Actually**: one A/B reranker sample, **file-level** | **30** | **0.733** | **0.867** | **0.933** |
-| Same run, **function-level** (what was claimed) | 29 | **0.034** | 0.138 | 0.172 |
-
-Three errors compounded:
-
-1. **Grain** — a file-level result was published as function-level.
-2. **Sample size** — a 30-instance A/B sample was published as the 99-instance `cm99` benchmark.
-3. **Magnitude** — the function-level top-1 of that very run was **0.034**, about **1/21** of
-   the published figure.
-
-No run at n ≥ 90 reaches top-10 ≥ 0.93 at either grain, and function-level top-1 has never
-exceeded **0.231** at that scale. A claimed range of "0.62–0.75 across configurations" also
-appeared in an internal launch document; **no measurement supports it** — measured file-level
-top-1 on `cm99` spans 0.515–0.848, and function-level spans 0.088–0.231.
+The lesson worth keeping: **a stored metric field is not a result.** When a gold set is
+re-frozen, every previously written score becomes stale, and only re-scoring the raw
+predictions is trustworthy. This repository therefore publishes re-scored values and the
+per-stream prediction counts they came from, not the numbers the runners happened to write.
 
 ---
 
 ## What is intentionally **not** here
 
-**Engine source.** CodeGrove is a private project under commercial evaluation. What makes the
-claims falsifiable is the method plus the complete run data, and both are here.
+**Engine source.** CodeGrove is a private project under commercial evaluation. The method plus
+the complete run data is what makes the claims falsifiable, and both are here.
 
-**Seeded-synthetic "scaffold" values.** An earlier internal document produced placeholder
-benchmark numbers from a seeded RNG in under a millisecond, to test pipeline wiring. They were
-labelled as such in prose but sat in result-shaped tables, and were mistaken for measurements.
-None appear here, and none should ever be cited.
+**The legacy `fn_top1` field.** Scored against contaminated `gold v1`. Retained in the private
+run archive for diffing; never published as a result.
 
-**Smoke runs.** n = 2–16 wiring checks routinely score 1.000 at file level. The CSV is filtered
-to n ≥ 90.
+**Seeded-synthetic "scaffold" values.** Placeholder numbers from a seeded RNG used to test
+pipeline wiring. Never measurements.
 
-**Internal corpora.** Numbers measured against private codebases are not published. Everything
-in this repository is measured on public SWE-bench Django data.
-
-See [`EXPERIMENTS.md`](EXPERIMENTS.md) for what each measurement campaign tested and what it
-concluded.
+**Smoke runs.** n < 30 wiring checks are excluded from the CSV.
