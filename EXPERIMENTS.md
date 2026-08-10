@@ -5,7 +5,7 @@ varied**, **what it measured**, and **what it concluded** — including the camp
 nothing, which are the ones usually deleted.
 
 - **Measurement window.** 2026-05-18 → 2026-07-01.
-- **Streams.** 135 scored streams at n ≥ 30, re-scored against frozen `gold v2`.
+- **Streams.** 133 scored streams at n ≥ 30, re-scored against frozen `gold v2`.
 - **Raw data.** [`data/localization-runs.csv`](data/localization-runs.csv).
 
 Campaigns were **pre-registered**: hypothesis, metric and decision rule written down before the

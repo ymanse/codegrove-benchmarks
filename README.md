@@ -17,13 +17,13 @@ FQNs. Reference run `sonnet5_both_max`, 2026-07-01:
 | | top-1 | top-3 | top-10 |
 | --- | :---: | :---: | :---: |
 | **function-level** (n=99) | **73.7%** | **86.9%** | **93.9%** |
-| file-level (n=99) | 87.9% | 94.9% | 98.0% |
+| file-level (n=99) | 77.8% | 84.8% | 87.9% |
 
 Across the 9 full `cm99` runs, function-level top-1 spans **0.232 – 0.849** (median **0.768**).
 The floor is one degraded configuration; every other run lands 0.727–0.849. Best measured
-configuration across all 135 scored streams: **0.860** function-level top-1.
+configuration across all 133 scored streams: **0.860** function-level top-1.
 
-**[`data/localization-runs.csv`](data/localization-runs.csv) — 135 streams, one row each.**
+**[`data/localization-runs.csv`](data/localization-runs.csv) — 133 streams, one row each.**
 Every number above is a cell in that file.
 
 ## What "function-level top-1" means here
@@ -35,7 +35,7 @@ the base commit — derivable from public data alone.
 
 ## Where it still fails
 
-Function-level 0.737 against file-level 0.879 on the reference run. The residual gap is
+Function-level 0.737 against file-level 0.778 on the reference run. The residual gap is
 **intra-file sibling discrimination** — choosing among several plausible functions inside a file
 that was already correctly identified.
 
@@ -70,7 +70,7 @@ only re-scoring raw predictions is trustworthy. This repository publishes re-sco
 | --- | --- |
 | [`BENCHMARKS.md`](BENCHMARKS.md) | Scoring rules, measured numbers, correction log |
 | [`EXPERIMENTS.md`](EXPERIMENTS.md) | Each campaign: what it varied, what it concluded — **including the null results** |
-| [`data/localization-runs.csv`](data/localization-runs.csv) | 135 scored streams: fn/file top-k at each grain, scored instance counts |
+| [`data/localization-runs.csv`](data/localization-runs.csv) | 133 scored streams: fn/file top-k at each grain, scored instance counts |
 
 ## Notes on reading these numbers
 

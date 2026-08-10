@@ -41,7 +41,7 @@ to files.
 | | top-1 | top-3 | top-5 | top-10 |
 | --- | :---: | :---: | :---: | :---: |
 | **function-level** | **0.737** | **0.869** | 0.889 | **0.939** |
-| file-level | 0.879 | 0.949 | — | 0.980 |
+| file-level | 0.778 | 0.849 | — | 0.879 |
 
 This is the run behind the published **≈73 % / ≈87 % / ≈94 %**.
 
@@ -52,20 +52,20 @@ This is the run behind the published **≈73 % / ≈87 % / ≈94 %**.
 | function-level top-1 | 0.232 | **0.768** | **0.849** |
 | function-level top-3 | 0.455 | 0.889 | 0.919 |
 | function-level top-10 | 0.616 | 0.929 | 0.939 |
-| file-level top-1 | 0.465 | 0.869 | 0.939 |
+| file-level top-1 | 0.465 | 0.788 | 0.879 |
 
 The 0.232 floor is a single degraded configuration (`opus_sdk_xhigh`); every other cm99 run
-lands between 0.727 and 0.849. Best measured configuration overall across all 135 scored
+lands between 0.727 and 0.849. Best measured configuration overall across all 133 scored
 streams is **0.860** function-level top-1 (`medium62_truebase`, n=57).
 
 **[`data/localization-runs.csv`](data/localization-runs.csv) has one row per scored stream —
-135 rows, n ≥ 30.** Every number on this page is a cell in that file.
+133 rows, n ≥ 30.** Every number on this page is a cell in that file.
 
 ---
 
 ## Where it actually fails
 
-Function-level top-1 ≈ 0.74 and file-level top-1 ≈ 0.88 on the reference run: the residual gap
+Function-level top-1 ≈ 0.74 and file-level top-1 ≈ 0.78 on the reference run: the residual gap
 is **intra-file sibling discrimination** — picking the right function among several plausible
 ones inside a file that was already correctly identified.
 
