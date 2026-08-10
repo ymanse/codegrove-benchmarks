@@ -145,6 +145,7 @@ absence is deliberate rather than silent:
 
 | Removed | Why |
 | --- | --- |
-| "function-level top-1 ≈ 73% / top-3 ≈ 87% / top-10 ≈ 94%" | File-level number relabelled as function-level; top-3/top-10 untraceable to any run. Retracted in [`BENCHMARKS.md`](BENCHMARKS.md#correction-log) |
+| "function-level top-1 ≈ 73% / top-3 ≈ 87% / top-10 ≈ 94%" on `cm99` | Traced 2026-08-10 to a single **file-level, n=30** A/B reranker sample (0.733 / 0.867 / 0.933). Wrong grain, wrong sample size; that run's actual function-level top-1 was **0.034**. Retracted — see [`BENCHMARKS.md`](BENCHMARKS.md#provenance-of-the-retracted-numbers) |
+| "function top-1 varies 0.62–0.75 across configurations" | Appeared in an internal launch document with **no measurement behind it**. Measured file-level top-1 on `cm99` spans 0.515–0.848; function-level spans 0.088–0.231 |
 | Seeded-synthetic "scaffold" benchmark values | Produced by a seeded RNG in under 1 ms to test pipeline wiring. Never measurements; must not be cited |
 | Smoke-run scores (n = 2–16) | Routinely 1.000 at file level; excluded from the CSV and from every table here |

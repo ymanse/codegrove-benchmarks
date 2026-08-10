@@ -59,11 +59,19 @@ size, query-expansion strategy or graph-anchor mode.
 ## Correction notice
 
 An earlier public description of this system quoted **"function-level top-1 ≈ 73% / top-3 ≈ 87%
-/ top-10 ≈ 94%"**. Those figures were wrong: 73% was a *file-level* result labelled as
-function-level, and the top-3 / top-10 values corresponded to no measured run. They were
-retracted on 2026-08-09 after a full re-aggregation of the run history, and this repository
-exists so the replacements are checkable rather than merely asserted. See
-[`BENCHMARKS.md`](BENCHMARKS.md#correction-log).
+/ top-10 ≈ 94%"** on `cm99`. Those figures were retracted on 2026-08-09 and traced to their
+source run on 2026-08-10. They came from a **single A/B reranker sample: file-level, 30
+instances** — not `cm99`, and not function-level.
+
+| | n | top-1 | top-3 | top-10 |
+| --- | ---: | ---: | ---: | ---: |
+| Published as "cm99, function-level" | *99* | *≈0.73* | *≈0.87* | *≈0.94* |
+| **Actually — file-level, one A/B sample** | **30** | **0.733** | **0.867** | **0.933** |
+| Same run, function-level (what was claimed) | 29 | **0.034** | 0.138 | 0.172 |
+
+Wrong grain, wrong sample size, and a magnitude off by roughly 21×. This repository exists so
+the replacements are checkable rather than merely asserted — see
+[`BENCHMARKS.md`](BENCHMARKS.md#provenance-of-the-retracted-numbers).
 
 ---
 

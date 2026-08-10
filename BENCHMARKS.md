@@ -147,11 +147,32 @@ class, GLM-5.2, and GPT-5.5 class models.
 
 | Date | Change |
 | --- | --- |
-| **2026-08-09** | Retracted "function-level top-1 ≈ 73% / top-3 ≈ 87% / top-10 ≈ 94%". Root cause: a file-level result was labelled function-level, and top-3/top-10 were not traceable to any run. Replaced with per-metric measured values, ranges over 11 `cm99` runs, and a published per-run CSV. Added the file→function gap section, which the retracted framing had hidden. |
+| **2026-08-09** | Retracted "function-level top-1 ≈ 73% / top-3 ≈ 87% / top-10 ≈ 94%". Replaced with per-metric measured values, ranges over 11 `cm99` runs, and this per-run CSV. Added the file→function gap section, which the retracted framing had hidden. |
+| **2026-08-10** | **Traced the retracted figures to their exact source run.** They came from a single A/B reranker sample — file-level, 30 instances — not from `cm99`, and not from function-level scoring. Details below. |
 
-Re-deriving the retracted figures: file-level top-1 on the strongest `cm99` configuration is
-0.848 and the median is 0.717 — the "73%" was in that neighbourhood, but it is a **file**
-number. The corresponding function-level value is 0.209–0.231.
+### Provenance of the retracted numbers
+
+The figures matched no `cm99` run because they were never a `cm99` result. Searching the full
+measurement history for the closest triple to (0.73, 0.87, 0.94) returns one run at an absolute
+error of 0.013 — every other candidate is 3× further away:
+
+| | n | top-1 | top-3 | top-10 |
+| --- | ---: | ---: | ---: | ---: |
+| **Published as** "cm99, function-level" | *99* | *≈0.73* | *≈0.87* | *≈0.94* |
+| **Actually**: one A/B reranker sample, **file-level** | **30** | **0.733** | **0.867** | **0.933** |
+| Same run, **function-level** (what was claimed) | 29 | **0.034** | 0.138 | 0.172 |
+
+Three errors compounded:
+
+1. **Grain** — a file-level result was published as function-level.
+2. **Sample size** — a 30-instance A/B sample was published as the 99-instance `cm99` benchmark.
+3. **Magnitude** — the function-level top-1 of that very run was **0.034**, about **1/21** of
+   the published figure.
+
+No run at n ≥ 90 reaches top-10 ≥ 0.93 at either grain, and function-level top-1 has never
+exceeded **0.231** at that scale. A claimed range of "0.62–0.75 across configurations" also
+appeared in an internal launch document; **no measurement supports it** — measured file-level
+top-1 on `cm99` spans 0.515–0.848, and function-level spans 0.088–0.231.
 
 ---
 
