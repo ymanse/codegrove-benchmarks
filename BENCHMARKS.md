@@ -83,6 +83,43 @@ lever.
 
 ---
 
+## Contamination check — does it hold on unseen code?
+
+`cm99` is drawn from public SWE-bench Django, which is old enough to sit inside model training
+data. The obvious objection is that the scores measure memorisation rather than localization.
+
+They are therefore also measured on **`fresh-2026`: 29 Django pull requests merged after the
+judges' training cutoffs**, scored by the same rule.
+
+| judge configuration | fn top-1 | top-3 | top-10 | median latency | $/instance |
+| --- | :---: | :---: | :---: | ---: | ---: |
+| Kimi-K2.7-Code (thinking=on) | **0.828** | 0.862 | 0.897 | 64.1 s | 0.030 |
+| gpt-5.3-codex (thinking=on) | **0.828** | 0.828 | 0.931 | 40.5 s | 0.059 |
+| gpt-5.5 (thinking=on) | **0.828** | 0.897 | 0.931 | 66.2 s | 0.182 |
+| GLM-5.2 (thinking=on) | 0.793 | 0.828 | 0.897 | 14.9 s | 0.019 |
+| grok-4.5 (high, neutral framing) | 0.793 | 0.862 | 0.897 | 32.9 s | 0.053 |
+| **grok-4.5 (effort=high)** | 0.759 | 0.897 | 0.897 | **2.5 s** | **0.015** |
+| gpt-5.5 (no router) | 0.724 | 0.897 | 0.897 | 2.8 s | 0.059 |
+
+All 13 measured configurations are in
+[`data/fresh-2026-judges.csv`](data/fresh-2026-judges.csv).
+
+**Result: the scores hold.** `fresh-2026` spans 0.724–0.828 against `cm99`'s 0.727–0.849 — the
+same band. Whatever the pipeline is doing, it is not recall of memorised Django.
+
+**Caveat, stated plainly:** n=29, so one instance moves the number by 3.4 pp. This set is three
+times noisier than `cm99` and is the weaker of the two measurements. It rules out memorisation
+as the *dominant* explanation; it does not resolve small differences between judges.
+
+**A cost finding that matters more than the ranking.** `grok-4.5` at `effort=high` reaches 0.759
+in a **2.5 s** median at **$0.015** per instance — against Kimi's 0.828 at 64 s and twice the
+price. That is 7 pp of accuracy for a **26×** latency difference. Since the top configurations
+on `cm99` are statistically indistinguishable anyway (McNemar p = 0.607 between the best two,
+bootstrap CI spanning zero), **the judge should be chosen on cost and latency, not on top-1** —
+the accuracy differences between serious candidates are not real.
+
+---
+
 ## Reproducing
 
 **Gold set.** Derivable from public SWE-bench data alone: gold patch → changed lines →

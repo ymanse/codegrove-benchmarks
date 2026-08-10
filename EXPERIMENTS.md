@@ -103,6 +103,23 @@ between a strong and a weak judge.
 **Conclusion — real reasoning, borderline.** The earlier read that "selection is exhausted" was
 a property of the weak judge, not of the task.
 
+**The stronger test came later.** Rather than a difference-in-differences on a synthetic pool,
+the full pipeline was re-run end-to-end on **`fresh-2026`** — 29 Django pull requests merged
+after the judges' training cutoffs — across 13 judge configurations
+([`data/fresh-2026-judges.csv`](data/fresh-2026-judges.csv), through 2026-07-09).
+
+Function-level top-1 there spans **0.724 – 0.828**, against `cm99`'s 0.727 – 0.849. Same band.
+Whatever the pipeline is doing, it is not recall of memorised Django. n=29 makes one instance
+worth 3.4 pp, so this rules out memorisation as the *dominant* explanation rather than
+resolving judge-to-judge differences.
+
+**The cost finding is the actionable one.** `grok-4.5` at `effort=high` reaches 0.759 in a
+**2.5 s** median at **$0.015**/instance; `Kimi-K2.7-Code` reaches 0.828 at 64 s and twice the
+price — 7 pp of accuracy for a **26×** latency difference. Combined with the `cm99` result that
+the top configurations are statistically indistinguishable (McNemar p = 0.607, bootstrap CI
+spanning zero), the operational conclusion is that **the judge should be selected on cost and
+latency, not on top-1**.
+
 ## Campaign 6 — The unflattering comparison
 
 A frontier model given only `Read`/`Grep`/`Glob` on a Django checkout — no graph, no index —

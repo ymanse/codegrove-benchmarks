@@ -26,6 +26,14 @@ configuration across all 133 scored streams: **0.860** function-level top-1.
 **[`data/localization-runs.csv`](data/localization-runs.csv) — 133 streams, one row each.**
 Every number above is a cell in that file.
 
+### It is not memorisation
+
+`cm99` comes from public SWE-bench, so the scores are also measured on **`fresh-2026`: 29 Django
+pull requests merged after the judges' training cutoffs**. Function-level top-1 there spans
+**0.724 – 0.828** — the same band as `cm99`'s 0.727–0.849. 13 configurations in
+[`data/fresh-2026-judges.csv`](data/fresh-2026-judges.csv). (n=29, so one instance is 3.4 pp;
+it rules out memorisation as the dominant explanation, not small judge-to-judge differences.)
+
 ## What "function-level top-1" means here
 
 Is the **first** predicted function FQN a gold function for that issue? That is the metric a
@@ -71,6 +79,7 @@ only re-scoring raw predictions is trustworthy. This repository publishes re-sco
 | [`BENCHMARKS.md`](BENCHMARKS.md) | Scoring rules, measured numbers, correction log |
 | [`EXPERIMENTS.md`](EXPERIMENTS.md) | Each campaign: what it varied, what it concluded — **including the null results** |
 | [`data/localization-runs.csv`](data/localization-runs.csv) | 133 scored streams: fn/file top-k at each grain, scored instance counts |
+| [`data/fresh-2026-judges.csv`](data/fresh-2026-judges.csv) | 13 judge configurations on `fresh-2026` (post-cutoff Django PRs): top-k, latency, cost |
 
 ## Notes on reading these numbers
 
