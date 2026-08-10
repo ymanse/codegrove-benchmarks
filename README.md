@@ -57,7 +57,7 @@ Designed and implemented **solo**, orchestrating AI agents as the development te
 | **Corpus** | A private multi-repo polyglot codebase — C++, Java, Kotlin, TypeScript in one graph |
 | **Languages parsed** | 9 families |
 | **Engine test suite** | 1,925 tests |
-| **Agent surface** | MCP server, 20 built-in tools (plus a separate agent-facing server) |
+| **Agent surface** | Two MCP servers — a graph-building core (20 tools) and an agent-facing server (**79 tools, 12 exposed by default**) |
 | **Backend migration** | In-memory graph DB → PostgreSQL + pgvector, lossless: **51 PASS / 0 FAIL**, differential equivalence **255/256**, vector **recall@10 0.955** |
 
 Engineering decisions worth naming, because they are what the numbers rest on:
@@ -71,7 +71,69 @@ Engineering decisions worth naming, because they are what the numbers rest on:
 - **Evaluation is a first-class subsystem**, not a script. That is what the rest of this
   repository documents.
 
-## 3. How well it works
+## 3. What it actually does — 79 tools, grouped by the question they answer
+
+The graph is the substrate; these are the capabilities built on it. Grouped by the question a
+developer actually asks, because that is how they get used.
+
+### Understanding unfamiliar code
+`understand_codebase` (first call in a repo you have never seen) · `search` (natural-language or
+keyword) · `regex_search` · `find_definition` · `get_code_detail` (verbatim body, not a summary) ·
+`document_symbols` · `get_smart_context`
+
+### "If I change this, what breaks?" — the capability the graph exists for
+`assess_impact` returns the blast radius *before* the edit: every affected caller and reference,
+**the test files and QA test cases that must be re-run**, and architecture context.
+`trace_call_flow` walks a request end to end, from endpoint through every hop to where the work
+lands — or backwards from a function to everything that reaches it.
+`analyze_dependencies` gives both directions of coupling and import cycles. `find_references`
+finds every mention, not just calls. `find_path` answers whether A reaches B at all.
+
+### "What do I have to re-run?"
+`get_related_test_cases` maps a code symbol to the QA scenarios already attached to it, so
+regression scope is a lookup rather than a guess. `coverage_explore` enters the graph from a
+non-symbol node — a TestCase or a requirement — and walks out to the code it touches.
+
+### Asynchronous boundaries and ordering — where call-graph tools give confidently wrong answers
+`async_edges` finds where work hands off to another thread or queue. `eb_order` answers whether
+event A is ordered before event B. A synchronous call-graph cannot see past a `post()`, so
+race/deadlock/ordering questions asked of `trace_call_flow` return "no callers" — a false
+negative. These two tools exist because that failure mode is silent.
+
+### Agent memory — three tiers
+`kg_remember` / `kg_recall` persist and retrieve *claims* across sessions, with durability chosen
+per claim: **short** (ephemeral LRU) · **long** (durable) · **reasoning** (derived).
+`kg_semantic_search` searches that memory by embedding. `memory_stats` exposes the working
+hierarchy — **L1 hot prompt-resident** and **L2 session-scoped** — as tokens, entries, hits,
+misses and evictions. Knowledge is kept in two deliberately separate layers: conversation-mined
+claims, and human-curated domain pages.
+
+### Domain vocabulary
+`kg_ontology_rag` · `get_domain_knowledge` · `find_related_domain_terms` connect code symbols to
+the product's domain terms, so a query phrased in business language reaches the right code.
+
+### Data model in the same graph
+`search_database_tables` · `get_table_schema` ingest MariaDB/MSSQL schemas alongside code, which
+is what makes a cross-domain question — "which code writes this column" — answerable at all.
+
+### Symbol-aware editing
+`replace_symbol_body` · `insert_after_symbol` · `insert_before_symbol` · `replace_lines` ·
+`create_file` — edits addressed by *symbol*, resolved through the graph, rather than by line
+offset guessed from a file read.
+
+### Cost-aware operation
+`session_start` opens a token-budgeted session and signals at 30 / 70 / 90 % of budget.
+**Only 12 of the 79 tools are exposed by default**; the rest are reachable through
+`tool_search` → `invoke_tool`. That tiering is deliberate — a 79-tool schema dumped into every
+prompt costs more context than most queries are worth. `get_health` / `get_metrics` /
+`get_embedding_stats` cover observability.
+
+### Escape hatch
+`text_to_cypher` and `execute_cypher` for questions the typed tools do not cover.
+
+---
+
+## 4. How well it works
 
 `cm99` — 99 real [SWE-bench](https://www.swebench.com/) Django issues, each labelled with the
 **function** the official fix actually changed. Reference run `sonnet5_both_max`, 2026-07-01:
@@ -107,7 +169,7 @@ configurations in [`data/fresh-2026-judges.csv`](data/fresh-2026-judges.csv).
 *(n=29, so one instance moves the number 3.4 pp. This rules out memorisation as the dominant
 explanation; it does not resolve small judge-to-judge differences.)*
 
-## 4. How it was measured
+## 5. How it was measured
 
 Measurement was treated as the deliverable, not an afterthought.
 
@@ -123,7 +185,7 @@ Measurement was treated as the deliverable, not an afterthought.
   indistinguishable** (McNemar p = 0.607, bootstrap CI spanning zero). So 0.82 – 0.85 is the
   pipeline's selection ceiling, and "our number is highest" would be a false claim.
 
-## 5. What did not work
+## 6. What did not work
 
 Published because negative results are what justify the current defaults — and because a
 benchmark page that only lists wins is not a benchmark page.
@@ -150,7 +212,7 @@ twice the price — 7 pp for a **26×** latency difference. Since the top config
 statistically indistinguishable anyway, **the judge is a cost-and-latency decision, not an
 accuracy one.**
 
-## 6. Correction notice
+## 7. Correction notice
 
 On 2026-08-09/10 the headline figures were **retracted in error** and replaced with
 0.209 / 0.330 / 0.495. That retraction was **withdrawn on 2026-08-10**; the original figures were
