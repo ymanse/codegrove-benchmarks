@@ -225,6 +225,31 @@ returns 0.737 / 0.869 / 0.939.
 Both the error and its withdrawal are kept in
 [`BENCHMARKS.md`](BENCHMARKS.md#correction-log) rather than deleted.
 
+
+### A failure this project found in itself
+
+While preparing this repository, the run JSON's stored `fn_top1` field was read as the final
+score. On that basis the headline figures were declared wrong and **a retraction was published
+here** — twice, the second time escalating to a claim of "21× overstatement".
+
+The original figures were correct. `fn_top1` is scored against the superseded, contaminated
+`gold v1`.
+
+The part worth recording is not the mistake but where the answer was. **Both the correct numbers
+and an explicit warning — "ignore the kg_t1 field" — had been sitting in this project's own
+knowledge graph as a stored claim for five weeks.** The knowledge was in the system. It was not
+retrieved, because retrieval was a thing someone had to remember to do.
+
+The retraction was withdrawn and both the error and its withdrawal were kept in the
+[correction log](BENCHMARKS.md#correction-log) rather than deleted. The root cause was treated
+as architectural rather than behavioural: a memory that only works when you remember to query it
+does not work. Relevant claims are now injected into every request automatically, and each
+session's conclusions are captured back as claims when it ends.
+
+**Searchable memory and memory that actually gets searched are different things.** That
+difference cost three days, and it is the strongest argument this project has for building the
+retrieval into the pipeline rather than leaving it to discipline.
+
 ---
 
 ## What's in this repository
