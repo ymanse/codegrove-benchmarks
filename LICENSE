@@ -1,0 +1,17 @@
+Copyright (c) 2026 Jinsoo Kim (github.com/ymanse)
+
+The documents and data in this repository are licensed under the
+Creative Commons Attribution 4.0 International License (CC BY 4.0).
+
+You may share and adapt this material for any purpose, including
+commercially, provided you give appropriate credit and indicate if
+changes were made.
+
+Full licence text: https://creativecommons.org/licenses/by/4.0/
+
+The SWE-bench dataset from which the evaluation instances are derived is
+distributed by its authors under the MIT licence; see
+https://www.swebench.com/ for details.
+
+This licence covers the benchmark documents and result data only. The
+CodeGrove engine is a separate, private work and is not licensed here.
