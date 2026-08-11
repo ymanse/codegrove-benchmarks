@@ -259,8 +259,11 @@ retrieval into the pipeline rather than leaving it to discipline.
 | --- | --- |
 | [`BENCHMARKS.md`](BENCHMARKS.md) | Scoring rules, measured numbers, correction log |
 | [`EXPERIMENTS.md`](EXPERIMENTS.md) | Each campaign: what it varied, what it concluded — including the null results |
+| [`CONTEXT-COST.md`](CONTEXT-COST.md) | What answering "where is this?" costs with no index vs an LSP vs the graph — 3 arms, one question |
 | [`data/localization-runs.csv`](data/localization-runs.csv) | 133 scored streams: fn/file top-k, scored instance counts |
 | [`data/fresh-2026-judges.csv`](data/fresh-2026-judges.csv) | 13 judge configurations on post-cutoff Django PRs: top-k, latency, cost |
+| [`data/context-cost-2026-08-11.csv`](data/context-cost-2026-08-11.csv) | Raw values behind `CONTEXT-COST.md` |
+| [`scripts/measure_context_cost.py`](scripts/measure_context_cost.py) | Reproduces the listing and grep arms on any git repository |
 
 ## Why the engine is not here
 

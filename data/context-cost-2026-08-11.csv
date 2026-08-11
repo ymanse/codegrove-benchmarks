@@ -1,0 +1,13 @@
+arm,tool,target,scope,wall_ms,tool_calls,tokens,results,note
+no-index,agent (grep/glob/read only),private C++ service,"where is access-group permission validation performed?",201000,30,73508,33 validation sites,"self-timed by the agent; harness reported 239979 ms incl. spawn; 16 files opened"
+lsp,clangd documentSymbol,private C++ service,one named file (cold),24900,1,60,6 symbols,"correct: ::checkByGroup 75-124; timing includes harness round-trip (est. 2-5 s)"
+lsp,clangd documentSymbol,private C++ service,one named file (warm),33000,1,,35 symbols,"second file was slower than the first; no cross-file warm-up"
+lsp,clangd workspace/symbol,private C++ service,repository-wide,26300,1,0,0 symbols,"no compile_commands.json -> no workspace index"
+graph,codegrove search (hybrid),private C++ service,repository-wide,2816,1,740,5 ranked candidates,"correct function included; limit=5"
+graph,codegrove search (auto),private C++ service,repository-wide,6610,1,740,5 ranked candidates,"llm-haiku-v2 classifier, confidence 0.85, routed to hybrid; search leg 5621 ms -> classifier ~989 ms"
+graph,codegrove search (hybrid),private C++ service,repository-wide,5536,1,2245,20 ranked candidates,"limit=20; tokens projected from 104/result + 165 envelope; run-to-run spread vs the 2816 ms call"
+grep,grep -rn (narrow),private C++ service,"accessgroup.*permission",573,1,2237,62 hits,unranked
+grep,grep -rln (filenames),private C++ service,permission,531,1,3280,225 files,unranked
+grep,grep -rn (broad),CodeGrove engine,embedding,51991,1,133401,3818 hits,"a single badly-scoped grep costs more than the whole 30-call agent run"
+listing,git ls-files,CodeGrove engine,repository-wide,33,1,13369,1271 files,10.5 tokens/file; nothing opened yet
+listing,git ls-files,CodeGrove MCP server,repository-wide,,1,5021,461 files,10.9 tokens/file

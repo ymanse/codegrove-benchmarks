@@ -257,8 +257,11 @@ top-1은 그보다 17 ~ 25%p 낮다. 손실은 **형제 함수 변별**에서 �
 | --- | --- |
 | [`BENCHMARKS.md`](BENCHMARKS.md) | 채점 규칙, 측정 수치, 정정 기록 |
 | [`EXPERIMENTS.md`](EXPERIMENTS.md) | 캠페인별로 무엇을 바꾸고 무엇을 결론냈는지. 무효 결과 포함 |
+| [`CONTEXT-COST.md`](CONTEXT-COST.md) | "이게 어디 있나"에 답하는 비용 — 인덱스 없음 vs LSP vs 그래프. 같은 질문, 세 가지 방식 |
 | [`data/localization-runs.csv`](data/localization-runs.csv) | 채점한 133개 스트림. 함수·파일 단위 top-k와 채점 인스턴스 수 |
 | [`data/fresh-2026-judges.csv`](data/fresh-2026-judges.csv) | 컷오프 이후 Django PR 기준 13개 judge 구성. top-k, 지연, 비용 |
+| [`data/context-cost-2026-08-11.csv`](data/context-cost-2026-08-11.csv) | `CONTEXT-COST.md`의 원자료 |
+| [`scripts/measure_context_cost.py`](scripts/measure_context_cost.py) | 목록·grep 팔을 아무 git 저장소에서나 재현하는 스크립트 |
 
 ## 엔진 소스를 여기 두지 않은 이유
 
