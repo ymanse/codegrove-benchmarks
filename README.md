@@ -53,11 +53,11 @@ Designed and implemented **solo**, orchestrating AI agents as the development te
 
 | | |
 | --- | --- |
-| **Graph in production use** | **455,540 nodes · 1,131,482 edges · 181,464 embeddings**, across 12 repositories |
+| **Graph in production use** | **455,540 nodes · 1,131,482 edges · 181,464 embeddings**, across 12 repositories (one coherent snapshot). The live index has since grown to **605,486 nodes** across 38 `repo@branch` indexes (2026-08-11) |
 | **Corpus** | A private multi-repo polyglot codebase — C++, Java, Kotlin, TypeScript in one graph |
 | **Languages parsed** | 9 families |
 | **Engine test suite** | 1,925 tests |
-| **Agent surface** | Two MCP servers — a graph-building core (20 tools) and an agent-facing server (**79 tools, 12 exposed by default**) |
+| **Agent surface** | Two MCP servers — a graph-building core (20 tools) and an agent-facing server (**80 tools, 12 exposed by default**) |
 | **Backend migration** | In-memory graph DB → PostgreSQL + pgvector, lossless: **51 PASS / 0 FAIL**, differential equivalence **255/256**, vector **recall@10 0.955** |
 
 Engineering decisions worth naming, because they are what the numbers rest on:
@@ -71,7 +71,7 @@ Engineering decisions worth naming, because they are what the numbers rest on:
 - **Evaluation is a first-class subsystem**, not a script. That is what the rest of this
   repository documents.
 
-## 3. What it actually does — 79 tools, grouped by the question they answer
+## 3. What it actually does — 80 tools, grouped by the question they answer
 
 The graph is the substrate; these are the capabilities built on it. Grouped by the question a
 developer actually asks, because that is how they get used.
@@ -123,9 +123,10 @@ offset guessed from a file read.
 
 ### Cost-aware operation
 `session_start` opens a token-budgeted session and signals at 30 / 70 / 90 % of budget.
-**Only 12 of the 79 tools are exposed by default**; the rest are reachable through
-`tool_search` → `invoke_tool`. That tiering is deliberate — a 79-tool schema dumped into every
-prompt costs more context than most queries are worth. `get_health` / `get_metrics` /
+**Only 12 of the 80 tools are exposed by default**; the rest are reachable through
+`tool_search` → `invoke_tool`. That tiering is deliberate, and it was measured: trimming the
+exposed set from 22 tools to 12 cut tool-schema tokens **10,494 → 2,016 (−81 %)** and *raised*
+tool-selection accuracy by **+10 pp** (bootstrap CI [+3, +17]; 100 matched pairs). `get_health` / `get_metrics` /
 `get_embedding_stats` cover observability.
 
 ### Escape hatch
