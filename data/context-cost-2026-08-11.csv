@@ -6,6 +6,7 @@ lsp,clangd workspace/symbol,private C++ service,repository-wide,26300,1,0,0 symb
 graph,codegrove search (hybrid),private C++ service,repository-wide,2816,1,740,5 ranked candidates,"correct function included; limit=5"
 graph,codegrove search (auto),private C++ service,repository-wide,6610,1,740,5 ranked candidates,"llm-haiku-v2 classifier, confidence 0.85, routed to hybrid; search leg 5621 ms -> classifier ~989 ms"
 graph,codegrove search (hybrid),private C++ service,repository-wide,5536,1,2245,20 ranked candidates,"limit=20; tokens projected from 104/result + 165 envelope; run-to-run spread vs the 2816 ms call"
+graph,codegrove search (localize),private C++ service,repository-wide,63100,1,854,5 ranked candidates,"three validators at ranks 1-3; AgenticLocalizer, bootstrap_files=9, n_candidates=44; tool reported latency_ms=5907 but wall clock was 63 s - reported field covers one stage only; wall includes harness round-trip"
 grep,grep -rn (narrow),private C++ service,"accessgroup.*permission",573,1,2237,62 hits,unranked
 grep,grep -rln (filenames),private C++ service,permission,531,1,3280,225 files,unranked
 grep,grep -rn (broad),CodeGrove engine,embedding,51991,1,133401,3818 hits,"a single badly-scoped grep costs more than the whole 30-call agent run"

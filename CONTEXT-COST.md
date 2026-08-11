@@ -13,9 +13,29 @@ identifiers are omitted; only counts are published.
 | --- | ---: | ---: | ---: | --- |
 | **No index** — agent with grep/glob/read only | **201 s** | 30 | **73,508** | 33 validation sites, exhaustive |
 | **LSP** — clangd | **24.9 s** *(per file)* | 1 | 60 | the 6 symbols **of one file you name** |
-| **Code graph** — one query | **2.8 s** | 1 | **740** | 5 ranked candidates, correct one included |
+| **Code graph** — `hybrid` retrieval | **2.8 s** | 1 | **740** | 5 ranked candidates, correct one at rank 5 |
+| **Code graph** — `localize` pipeline | **63 s** | 1 | 854 | 5 ranked candidates, **the three validators at ranks 1–3** |
 
-Against the no-index arm that is **~72× the wall time and ~99× the tokens**.
+Against the no-index arm the `hybrid` query is **~72× the wall time and ~99× the tokens**.
+
+## The two graph modes are the real trade-off
+
+`hybrid` is retrieval only. `localize` runs the full three-stage pipeline — the one the
+[localization benchmark](BENCHMARKS.md) scores — with an LLM judge over a grounded candidate set
+(`bootstrap_files: 9`, `n_candidates: 44`).
+
+The cost is almost entirely **latency, not context**: 854 tokens vs 740 is a 1.2× difference,
+while wall time is **22×**. What it buys is ordering. `hybrid` put the correct function at rank 5;
+`localize` returned the three actual validation methods — `check`, `checkById`, `checkByGroup` —
+at ranks 1, 2 and 3, in that order.
+
+That asymmetry is the operational finding: when an agent's budget is context, retrieval is
+already enough; when its budget is *turns*, paying 60 s once to not open four wrong files first
+can be the cheaper trade.
+
+> **Instrumentation caveat.** In `localize` mode the tool reported `latency_ms: 5907` while the
+> end-to-end wall clock was 63 s. The reported field evidently covers one stage, not the pipeline.
+> The 63 s figure is the one to trust, and it includes harness round-trip.
 
 ### These are not the same answer
 
