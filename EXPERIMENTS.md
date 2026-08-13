@@ -35,7 +35,7 @@ Oracle analysis separates *retrieval* failure from *selection* failure.
 | Measure | Value | Reading |
 | --- | ---: | --- |
 | gold present in the judge's candidate pool | 0.824 – 0.833 | retrieval mostly succeeds |
-| function-level top-1 | 0.58 – 0.67 *(full-114)* | selection loses 17–25 pp of it |
+| function-level top-1 | 0.58 – 0.67 *(full-114)* | selection loses 15–25 pp of it |
 | pool-union top-10 across 9 variants | 0.892 | recall headroom is real |
 | oracle selector on that pool | 0.804 | a perfect selector would recover ~12 pp more |
 
@@ -162,7 +162,7 @@ competitive.
 1. **Function-level top-1 ≈ 0.74** on the reference cm99 run, 0.727–0.849 across configurations
    (one degraded outlier at 0.232), best measured 0.860.
 2. **Retrieval is not the bottleneck** — gold reaches the candidate pool ~82 % of the time.
-   Selection loses 17–25 pp of that.
+   Selection loses 15–25 pp of that.
 3. **Sibling discrimination resisted six pre-registered interventions**, all null even after
    the non-determinism confound was removed.
 4. **A stale gold set moved every number by ~3×.** Re-scoring, not stored fields, is the source
