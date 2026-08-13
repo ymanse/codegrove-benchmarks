@@ -45,18 +45,23 @@ to files.
 
 This is the run behind the published **≈73 % / ≈87 % / ≈94 %**.
 
-### Across the 9 full `cm99` runs (n=99 each)
+### Across the 11 runs scored at n=99
+
+Population rule: every row in `localization-runs.csv` with `n_scored == 99`. Stated explicitly
+because an earlier version of this table selected runs by name substring, which silently
+excluded `likely_both_p60` and `likely_both_p80`.
 
 | Metric | min | median | max |
 | --- | :---: | :---: | :---: |
 | function-level top-1 | 0.232 | **0.768** | **0.849** |
 | function-level top-3 | 0.455 | 0.889 | 0.919 |
-| function-level top-10 | 0.616 | 0.929 | 0.939 |
-| file-level top-1 | 0.465 | 0.788 | 0.879 |
+| function-level top-10 | 0.616 | 0.929 | 0.950 |
+| file-level top-1 | 0.515 | 0.717 | 0.849 |
 
-The 0.232 floor is a single degraded configuration (`opus_sdk_xhigh`); every other cm99 run
-lands between 0.727 and 0.849. Best measured configuration overall across all 133 scored
-streams is **0.860** function-level top-1 (`medium62_truebase`, n=57).
+Two configurations sit below the pack: `cm99_opus_sdk_xhigh` at 0.232 and `likely_both_p80`
+at 0.475. The other nine land between 0.727 and 0.849. Best measured configuration overall
+across all 133 scored streams is **0.860** function-level top-1 (`medium62_truebase`, n=57 —
+a different instance set, not directly comparable to the n=99 runs above).
 
 **[`data/localization-runs.csv`](data/localization-runs.csv) has one row per scored stream —
 133 rows, n ≥ 30.** Every number on this page is a cell in that file.
@@ -154,6 +159,8 @@ MiniMax-M3.
 | **2026-08-09** | *(withdrawn)* Published a retraction of "function-level 73 / 87 / 94", replacing it with 0.209 / 0.330 / 0.495. |
 | **2026-08-10** | *(withdrawn)* Attributed the retracted figures to a 30-instance file-level A/B sample. |
 | **2026-08-10** | **Both retractions withdrawn; original figures reinstated.** Root cause: the retraction was built by reading the legacy `fn_top1` field out of the run JSONs — the **v1-contaminated** column — instead of re-scoring predictions against `gold v2`. Re-scoring `sonnet5_both_max_cm99` against `gold v2` returns **0.737 / 0.869 / 0.939**, matching the original claim. The audit trail that would have prevented this (`_LEDGER.md`, `_TRACE_FNT1.md`, `_master_table_v2.txt`) sat beside the JSON files and was not read. |
+
+| **2026-08-12** | Corrected the `n=99` summary table. The file-level top-1 row read 0.465 / 0.788 / 0.879; recomputed from the CSV it is 0.515 / 0.717 / 0.849 — the previous values were not derivable from any subset. The population was also restated as `n_scored == 99` (11 runs) instead of a run-name substring match (9 runs), which had excluded a second degraded configuration (`likely_both_p80`, 0.475); `function-level top-10` max moves 0.939 → 0.950 accordingly. Separately, `CONTEXT-COST.md` stated the graph query cost "~72× the wall time and ~99× the tokens" of the no-index arm where its own CSV gives the inverse (~1/71, ~1/99). |
 
 The lesson worth keeping: **a stored metric field is not a result.** When a gold set is
 re-frozen, every previously written score becomes stale, and only re-scoring the raw

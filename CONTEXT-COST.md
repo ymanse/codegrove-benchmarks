@@ -16,7 +16,8 @@ identifiers are omitted; only counts are published.
 | **Code graph** — `hybrid` retrieval | **2.8 s** | 1 | **740** | 5 ranked candidates, correct one at rank 5 |
 | **Code graph** — `localize` pipeline | **63 s** | 1 | 854 | 5 ranked candidates, **the three validators at ranks 1–3** |
 
-Against the no-index arm the `hybrid` query is **~72× the wall time and ~99× the tokens**.
+Against the no-index arm the `hybrid` query answers the same question in **~1/71 the wall time
+and ~1/99 the tokens** (2,816 ms vs 201,000 ms; 740 vs 73,508 tokens).
 
 ## The two graph modes are the real trade-off
 
